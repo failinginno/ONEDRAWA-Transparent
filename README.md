@@ -1,21 +1,16 @@
-# ONEDRAW Protocol Transparency
+# ONEDRAW Protocol
 
-Public reference implementation and verification material for the ONEDRAW prize draw protocol deployed on Robinhood Chain Mainnet.
+ONEDRAW is an onchain prize draw protocol deployed on Robinhood Chain. Pools operate with fixed terms: a defined prize, ticket price, capacity, duration and protocol fee. Ticket ownership, draw requests, results, prize claims and refunds are recorded onchain.
 
-This repository is intentionally limited to the protocol surfaces required to understand and independently verify a draw. It does not contain private keys, RPC credentials, relayer configuration, operator tooling, deployment caches, or the private administration interface.
+This repository contains the Solidity contracts and verification material for the production protocol.
 
-## Core guarantee
+## Mainnet deployment
 
-The operator does not submit a winning wallet. After a pool is completely sold, the deployed contracts derive one ticket index from a proof-verified random word:
+**Network:** Robinhood Chain Mainnet
 
-```solidity
-uint32 winningTicket = uint32(randomValue % pool.capacity);
-address winner = _ticketOwners[pool.id][winningTicket];
-```
+**Chain ID:** `4663`
 
-The winner is therefore the wallet already recorded as the owner of the selected ticket.
-
-## Mainnet contracts
+**Explorer:** [robinhoodchain.blockscout.com](https://robinhoodchain.blockscout.com)
 
 | Contract | Address |
 | --- | --- |
@@ -24,34 +19,93 @@ The winner is therefore the wallet already recorded as the owner of the selected
 | Randomness Adapter | [`0x95CA6615b4c0514B56b07631A010d488B4EB2B99`](https://robinhoodchain.blockscout.com/address/0x95CA6615b4c0514B56b07631A010d488B4EB2B99) |
 | OpenVRF Router | [`0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f) |
 
-Network: Robinhood Chain Mainnet (`chainId 4663`).
+Users should verify contract addresses against this table before interacting with the protocol.
+
+## Protocol architecture
+
+### PoolManager
+
+`OneDrawPoolManager` manages pool creation, ticket allocation, draw state, winner selection, prize claims and refunds. Pool economics are fixed when a pool is created and cannot be changed after ticket sales begin.
+
+### Randomness Adapter
+
+`OpenVRFRandomnessProvider` binds each PoolManager request to an authenticated OpenVRF callback. A failed callback may be retried with the same stored random word; retrying does not create a new draw.
+
+### OpenVRF Router
+
+The Router records a future drand round for each request and verifies the submitted signature onchain. The verified round output is combined with request-specific values before delivery to the adapter.
+
+### FeeVault
+
+`FeeVault` accounts for protocol fees realized after successful settlement. Withdrawals are limited to the amount recorded in `accruedFees`; prize and refund liabilities are not held as withdrawable protocol fees.
+
+## Winner selection
+
+Tickets are indexed sequentially from `0` to `capacity - 1`. Once a pool reaches capacity and receives verified randomness, PoolManager selects the winner using the following rule:
+
+```solidity
+uint32 winningTicket = uint32(randomValue % pool.capacity);
+address winner = _ticketOwners[pool.id][winningTicket];
+```
+
+The selected wallet is read from the ticket ownership recorded by the contract. PoolManager does not accept a winner address as an input to settlement.
 
 ## Draw lifecycle
 
-1. Every purchase assigns sequential ticket indexes to the buyer wallet onchain.
-2. When `ticketsSold == capacity`, sales close and PoolManager requests randomness.
-3. OpenVRF pins a future drand round before its signature is available.
-4. An authorized relayer submits the signature; the Router verifies the pinned round onchain.
-5. The adapter forwards the verified word to PoolManager.
-6. PoolManager applies the fixed modulo rule and stores the winning ticket and wallet.
-7. Only the recorded winner can call `claimPrize`.
+1. A pool is created with fixed economic and timing parameters.
+2. Each purchase assigns one or more sequential ticket indexes to the buyer.
+3. The first purchase starts the pool timer.
+4. A pool that reaches capacity closes ticket sales and requests randomness.
+5. OpenVRF verifies the designated drand round and delivers the random word.
+6. PoolManager stores the winning ticket and corresponding wallet.
+7. The recorded winner claims the prize from PoolManager.
 
-See [docs/VERIFICATION.md](docs/VERIFICATION.md) for an independent verification checklist and [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority boundary.
+If a pool expires below capacity, no winner is selected. Participants may claim the value of their tickets through the refund path.
 
-## Repository map
+## Independent verification
 
-- `src/OneDrawPoolManager.sol` — pools, tickets, deterministic selection, claims and refunds.
-- `src/FeeVault.sol` — realized protocol-fee accounting and owner withdrawal limits.
-- `src/OpenVRFRandomnessProvider.sol` — authenticated Router adapter and retry semantics.
-- `openvrf/OpenVRF.sol` — deployed Router reference source and drand verification flow.
-- `test/` — unit, fuzz and invariant tests used by the protocol project.
+Every completed draw can be checked without relying on the ONEDRAW interface:
 
-## Security scope
+1. Read the pool capacity, request ID, winning ticket and winner from PoolManager.
+2. Reconstruct ticket ownership from `TicketsPurchased` events.
+3. Match the request with the adapter and OpenVRF Router records.
+4. Read the fulfilled random word from the Router.
+5. Calculate `randomWord % capacity`.
+6. Confirm that the resulting ticket owner matches `WinnerSelected`.
 
-Public source improves verifiability; it is not by itself an audit or a guarantee that software is free of defects. Contract state on Robinhood Chain is authoritative. Users should verify addresses and bytecode before relying on any interface.
+The full procedure is documented in [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
-Responsible disclosure guidance is available in [SECURITY.md](SECURITY.md).
+## Administrative scope
+
+The protocol owner may create pools and templates, enable or disable templates, pause new entry and configure the provider used for future randomness requests. These permissions do not include setting a winning ticket, supplying a winner address, changing sold ticket ownership or replacing a completed result.
+
+See [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority and availability model.
+
+## Repository structure
+
+```text
+src/
+  OneDrawPoolManager.sol
+  OpenVRFRandomnessProvider.sol
+  FeeVault.sol
+  interfaces/
+openvrf/
+  OpenVRF.sol
+test/
+  OneDrawPoolManager.t.sol
+  OpenVRFRandomnessProvider.t.sol
+  OneDrawInvariant.t.sol
+docs/
+  VERIFICATION.md
+  TRUST-MODEL.md
+```
+
+## Security
+
+Contract source and public verification material improve transparency but do not eliminate smart-contract, infrastructure, wallet or economic risk. Deployed bytecode and contract state on Robinhood Chain are authoritative.
+
+Please follow the responsible disclosure process in [SECURITY.md](SECURITY.md) when reporting a suspected vulnerability.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Licensed under the [MIT License](LICENSE).
