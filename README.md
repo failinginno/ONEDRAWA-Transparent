@@ -1,6 +1,6 @@
 # ONEDRAW Protocol
 
-ONEDRAW is an onchain prize draw protocol deployed on Robinhood Chain. Pools operate with fixed terms: a defined prize, ticket price, capacity, duration and protocol fee. Ticket ownership, draw requests, results, prize claims and refunds are recorded onchain.
+ONEDRAW is an onchain prize draw protocol deployed on Robinhood Chain. The production system supports USDG token pools and native ETH pools through separate managers and fee vaults. Every pool operates with fixed terms: a defined prize, ticket price, capacity, duration and protocol fee. Ticket ownership, draw requests, results, prize claims and refunds are recorded onchain.
 
 This repository contains the Solidity contracts and verification material for the production protocol.
 
@@ -14,10 +14,13 @@ This repository contains the Solidity contracts and verification material for th
 
 | Contract | Address |
 | --- | --- |
-| PoolManager | [`0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096`](https://robinhoodchain.blockscout.com/address/0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096) |
-| FeeVault | [`0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6`](https://robinhoodchain.blockscout.com/address/0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6) |
-| Randomness Adapter | [`0x95CA6615b4c0514B56b07631A010d488B4EB2B99`](https://robinhoodchain.blockscout.com/address/0x95CA6615b4c0514B56b07631A010d488B4EB2B99) |
-| OpenVRF Router | [`0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f) |
+| USDG PoolManager | [`0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096`](https://robinhoodchain.blockscout.com/address/0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096) |
+| USDG FeeVault | [`0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6`](https://robinhoodchain.blockscout.com/address/0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6) |
+| USDG Randomness Adapter | [`0x95CA6615b4c0514B56b07631A010d488B4EB2B99`](https://robinhoodchain.blockscout.com/address/0x95CA6615b4c0514B56b07631A010d488B4EB2B99) |
+| ETH PoolManager | [`0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e`](https://robinhoodchain.blockscout.com/address/0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e) |
+| ETH FeeVault | [`0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11`](https://robinhoodchain.blockscout.com/address/0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11) |
+| ETH Randomness Adapter | [`0x88F69527158Ee0919D79718DFe165c3F5aF805EB`](https://robinhoodchain.blockscout.com/address/0x88F69527158Ee0919D79718DFe165c3F5aF805EB) |
+| Shared OpenVRF Router | [`0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f) |
 
 Users should verify contract addresses against this table before interacting with the protocol.
 
@@ -26,6 +29,10 @@ Users should verify contract addresses against this table before interacting wit
 ### PoolManager
 
 `OneDrawPoolManager` manages pool creation, ticket allocation, draw state, winner selection, prize claims and refunds. Pool economics are fixed when a pool is created and cannot be changed after ticket sales begin.
+
+### Native ETH PoolManager
+
+`OneDrawNativePoolManager` implements the same lifecycle for native ETH. A purchase must include the exact `ticketPrice * quantity` value. The native manager is deployed separately from the USDG manager, so neither contract can access or account for the other asset's balances.
 
 ### Randomness Adapter
 
@@ -38,6 +45,8 @@ The Router records a future drand round for each request and verifies the submit
 ### FeeVault
 
 `FeeVault` accounts for protocol fees realized after successful settlement. Withdrawals are limited to the amount recorded in `accruedFees`; prize and refund liabilities are not held as withdrawable protocol fees.
+
+`NativeFeeVault` applies the same accounting boundary to native ETH fees. ETH is recorded as withdrawable only after a successfully completed draw forwards the configured protocol fee.
 
 ## Winner selection
 
@@ -52,7 +61,7 @@ The selected wallet is read from the ticket ownership recorded by the contract. 
 
 ## Draw lifecycle
 
-1. A pool is created with fixed economic and timing parameters.
+1. A USDG or ETH pool is created with fixed economic and timing parameters.
 2. Each purchase assigns one or more sequential ticket indexes to the buyer.
 3. The first purchase starts the pool timer.
 4. A pool that reaches capacity closes ticket sales and requests randomness.
@@ -77,7 +86,7 @@ The full procedure is documented in [docs/VERIFICATION.md](docs/VERIFICATION.md)
 
 ## Administrative scope
 
-The protocol owner may create pools and templates, enable or disable templates, pause new entry and configure the provider used for future randomness requests. These permissions do not include setting a winning ticket, supplying a winner address, changing sold ticket ownership or replacing a completed result.
+The protocol owner may create USDG and ETH pools and templates, enable or disable templates, pause new entry, withdraw only accounted protocol fees, and configure the provider used for future randomness requests. These permissions do not include setting a winning ticket, supplying a winner address, changing sold ticket ownership, accessing participant liabilities through a fee vault or replacing a completed result.
 
 See [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority and availability model.
 
@@ -86,8 +95,10 @@ See [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority and av
 ```text
 src/
   OneDrawPoolManager.sol
+  OneDrawNativePoolManager.sol
   OpenVRFRandomnessProvider.sol
   FeeVault.sol
+  NativeFeeVault.sol
   interfaces/
 openvrf/
   OpenVRF.sol

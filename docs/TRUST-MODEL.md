@@ -4,12 +4,12 @@ Transparency requires documenting the powers that remain, not only the restricti
 
 ## Protocol owner can
 
-- create pools and immutable pool templates;
+- create USDG and native ETH pools and immutable pool templates;
 - enable or disable templates;
 - pause new entry and pool creation;
 - unpause the protocol;
 - configure the randomness provider used by future requests;
-- withdraw only realized fees recorded by FeeVault;
+- withdraw only realized fees recorded by the corresponding USDG or native ETH FeeVault;
 - administer Router consumer and relayer authorization.
 
 ## Protocol owner cannot
@@ -20,7 +20,11 @@ Transparency requires documenting the powers that remain, not only the restricti
 - fulfill the same randomness request twice;
 - reroll or replace a completed result;
 - claim a prize assigned to another wallet;
-- withdraw participant refund liabilities through FeeVault.
+- withdraw participant prize or refund liabilities through either FeeVault.
+
+## Asset isolation
+
+USDG and native ETH use separate PoolManager, randomness adapter and FeeVault deployments. The two managers share the OpenVRF Router but do not share custody or accounting. An administrative action in one manager cannot transfer funds held by the other manager.
 
 ## Relayer boundary
 

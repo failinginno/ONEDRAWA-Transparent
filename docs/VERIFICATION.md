@@ -4,7 +4,7 @@ The following procedure does not require trusting the ONEDRAW website.
 
 ## 1. Identify the pool
 
-Read the pool from `OneDrawPoolManager` and record its capacity, tickets sold, status, randomness request ID, winning ticket and winner.
+Identify the pool asset first. Read USDG pools from `OneDrawPoolManager` and native ETH pools from `OneDrawNativePoolManager`. Record capacity, tickets sold, status, randomness request ID, winning ticket and winner.
 
 ## 2. Verify ticket ownership
 
@@ -27,7 +27,13 @@ Compare both values with PoolManager's `WinnerSelected` event and stored pool re
 
 ## 5. Verify settlement
 
-The protocol fee is transferred to FeeVault only after winner selection. The prize remains a PoolManager liability until the recorded winner claims it. Confirm the `PrizePaid` event and USDG transfer when a claim occurs.
+The protocol fee is transferred to the matching asset vault only after winner selection: `FeeVault` for USDG or `NativeFeeVault` for ETH. The prize remains a manager liability until the recorded winner claims it. Confirm the `PrizePaid` event and the corresponding USDG transfer or native ETH payment when a claim occurs.
+
+## Asset-specific checks
+
+- For USDG, confirm the token address and `Transfer` events between participant, PoolManager, winner and FeeVault.
+- For ETH, confirm the purchase transaction value equals `ticketPrice * quantity` and inspect native value transfers to the winner or refund claimant.
+- Confirm the pool manager and fee vault belong to the same asset system. USDG and ETH accounting must not be combined.
 
 ## Failure and retry behavior
 
