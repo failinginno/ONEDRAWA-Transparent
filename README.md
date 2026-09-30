@@ -4,6 +4,12 @@ ONEDRAW is an onchain prize draw protocol deployed on Robinhood Chain. The produ
 
 This repository contains the Solidity contracts and verification material for the production protocol.
 
+## V2 security upgrade (prepared, not yet deployed)
+
+The repository also contains a tested V2 candidate. **The V2 source files are not the current mainnet deployment until new addresses are published in the deployment table above.** The candidate makes the randomness provider immutable, binds each adapter to one manager only once, adds a one-hour permissionless refund path if a full pool remains stuck waiting for randomness, and raises the pool-capacity ceiling so the 500 and 1,000 USDG tiers can use 1 USDG tickets.
+
+The V2 test suite currently passes 58 tests, including timeout-boundary, paused-refund, liability-coverage, winner-selection and invariant tests. Deployment gates and migration steps are listed in [docs/V2-UPGRADE-PLAN.md](docs/V2-UPGRADE-PLAN.md). Multisig/timelock administration and an independent third-party audit are intentionally tracked separately and are not represented as completed.
+
 ## Mainnet deployment
 
 **Network:** Robinhood Chain Mainnet
@@ -90,6 +96,8 @@ The protocol owner may create USDG and ETH pools and templates, enable or disabl
 
 See [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority and availability model.
 
+For the pending V2 candidate, PoolManager's randomness provider and the adapter's Router cannot be replaced after deployment. The adapter is bound to its PoolManager once. Other owner permissions remain until a later multisig/timelock migration.
+
 ## Repository structure
 
 ```text
@@ -97,6 +105,9 @@ src/
   OneDrawPoolManager.sol
   OneDrawNativePoolManager.sol
   OpenVRFRandomnessProvider.sol
+  OneDrawPoolManagerV2.sol
+  OneDrawNativePoolManagerV2.sol
+  OpenVRFRandomnessProviderV2.sol
   FeeVault.sol
   NativeFeeVault.sol
   interfaces/
@@ -109,6 +120,7 @@ test/
 docs/
   VERIFICATION.md
   TRUST-MODEL.md
+  V2-UPGRADE-PLAN.md
 ```
 
 ## Security
