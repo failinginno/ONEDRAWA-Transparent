@@ -26,7 +26,7 @@ The V2 test suite currently passes 58 tests, including timeout-boundary, paused-
 | ETH PoolManager | [`0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e`](https://robinhoodchain.blockscout.com/address/0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e) |
 | ETH FeeVault | [`0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11`](https://robinhoodchain.blockscout.com/address/0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11) |
 | ETH Randomness Adapter | [`0x88F69527158Ee0919D79718DFe165c3F5aF805EB`](https://robinhoodchain.blockscout.com/address/0x88F69527158Ee0919D79718DFe165c3F5aF805EB) |
-| Shared OpenVRF Router | [`0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4d8Cd00E1dB30B2Cbef1de0f) |
+| Shared OpenVRF Router | [`0x4820F1DABC267fD4dD8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4dD8Cd00E1dB30B2Cbef1de0f) |
 
 Users should verify contract addresses against this table before interacting with the protocol.
 
