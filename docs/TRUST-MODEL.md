@@ -8,7 +8,6 @@ Transparency requires documenting the powers that remain, not only the restricti
 - enable or disable templates;
 - pause new entry and pool creation;
 - unpause the protocol;
-- configure the randomness provider used by future requests;
 - withdraw only realized fees recorded by the corresponding USDG or native ETH FeeVault;
 - administer Router consumer and relayer authorization.
 
@@ -38,8 +37,8 @@ An authorized relayer provides liveness, not discretion over a valid result. It 
 - Smart contracts, dependencies and wallets can contain implementation vulnerabilities.
 - Public source does not replace independent security review.
 
-## Pending V2 changes
+## Deployed V2 protections
 
-The V2 candidate in this repository removes the owner's ability to replace the PoolManager randomness provider, keeps the Router immutable, and makes adapter-to-manager binding a one-time operation. A full pool that remains in `DRAWING` for one hour becomes refundable by each participant even if the protocol is paused. These protections apply only after users move to published V2 deployment addresses; the mainnet table in the README remains the source of truth for the currently deployed version.
+The deployed V2 contracts remove the owner's ability to replace the PoolManager randomness provider, keep the Router immutable, and make adapter-to-manager binding a one-time operation. A full pool that remains in `DRAWING` for one hour becomes refundable by each participant even if the protocol is paused. The mainnet table in the README is the source of truth for the current deployment addresses.
 
 Multisig/timelock administration and an independent third-party audit are deferred work. Until those are completed, owner-key compromise and undiscovered implementation defects remain explicit risks.

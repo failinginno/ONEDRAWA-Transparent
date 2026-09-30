@@ -1,5 +1,7 @@
 # ONEDRAW V2 security upgrade
 
+**Deployment status:** deployed to Robinhood Chain Mainnet on September 30, 2026. Current addresses are published in the repository README. Source verification and production smoke testing remain release checklist items until separately recorded as complete.
+
 V2 is a new, non-upgradeable deployment. It does not mutate or migrate balances from the existing
 mainnet contracts. Existing pools remain governed by their original contracts until they complete or
 refund.

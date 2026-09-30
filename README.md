@@ -4,9 +4,9 @@ ONEDRAW is an onchain prize draw protocol deployed on Robinhood Chain. The produ
 
 This repository contains the Solidity contracts and verification material for the production protocol.
 
-## V2 security upgrade (prepared, not yet deployed)
+## V2 security upgrade (deployed September 30, 2026)
 
-The repository also contains a tested V2 candidate. **The V2 source files are not the current mainnet deployment until new addresses are published in the deployment table above.** The candidate makes the randomness provider immutable, binds each adapter to one manager only once, adds a one-hour permissionless refund path if a full pool remains stuck waiting for randomness, and raises the pool-capacity ceiling so the 500 and 1,000 USDG tiers can use 1 USDG tickets.
+The production application now uses the V2 addresses in the deployment table below. V2 makes the randomness provider immutable, binds each adapter to one manager only once, adds a one-hour permissionless refund path if a full pool remains stuck waiting for randomness, and raises the pool-capacity ceiling so the 500 and 1,000 USDG tiers can use 1 USDG tickets.
 
 The V2 test suite currently passes 58 tests, including timeout-boundary, paused-refund, liability-coverage, winner-selection and invariant tests. Deployment gates and migration steps are listed in [docs/V2-UPGRADE-PLAN.md](docs/V2-UPGRADE-PLAN.md). Multisig/timelock administration and an independent third-party audit are intentionally tracked separately and are not represented as completed.
 
@@ -20,12 +20,12 @@ The V2 test suite currently passes 58 tests, including timeout-boundary, paused-
 
 | Contract | Address |
 | --- | --- |
-| USDG PoolManager | [`0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096`](https://robinhoodchain.blockscout.com/address/0x8cb41dCCeA0ce11108f72b9ca6fd080DcE728096) |
-| USDG FeeVault | [`0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6`](https://robinhoodchain.blockscout.com/address/0x493c4e56eE3C8Be45b50455fBCFE8e831C05e5e6) |
-| USDG Randomness Adapter | [`0x95CA6615b4c0514B56b07631A010d488B4EB2B99`](https://robinhoodchain.blockscout.com/address/0x95CA6615b4c0514B56b07631A010d488B4EB2B99) |
-| ETH PoolManager | [`0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e`](https://robinhoodchain.blockscout.com/address/0x75c64ab5eFb59ad623FeAf16a944422415C4cE7e) |
-| ETH FeeVault | [`0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11`](https://robinhoodchain.blockscout.com/address/0x4Ba829634aDE9636451A36eCc836bD0c5E4B7D11) |
-| ETH Randomness Adapter | [`0x88F69527158Ee0919D79718DFe165c3F5aF805EB`](https://robinhoodchain.blockscout.com/address/0x88F69527158Ee0919D79718DFe165c3F5aF805EB) |
+| USDG V2 PoolManager | [`0xF134fA9F4A1cDAc561F9cb8b0f500A7d6Fc11B14`](https://robinhoodchain.blockscout.com/address/0xF134fA9F4A1cDAc561F9cb8b0f500A7d6Fc11B14) |
+| USDG V2 FeeVault | [`0x78c2FFB13eaE458204AD12Cd396321555d84Ae25`](https://robinhoodchain.blockscout.com/address/0x78c2FFB13eaE458204AD12Cd396321555d84Ae25) |
+| USDG V2 Randomness Adapter | [`0xb2A3FB4dA03248060284E1C55dd127e31cD8dc52`](https://robinhoodchain.blockscout.com/address/0xb2A3FB4dA03248060284E1C55dd127e31cD8dc52) |
+| ETH V2 PoolManager | [`0xd4F3A6fF72f4D4d57Ec44240D79Bb3b15F6ffDcd`](https://robinhoodchain.blockscout.com/address/0xd4F3A6fF72f4D4d57Ec44240D79Bb3b15F6ffDcd) |
+| ETH V2 FeeVault | [`0x4Cd5D04d96bfD7e7cdCedB831dEb42d92bED2A16`](https://robinhoodchain.blockscout.com/address/0x4Cd5D04d96bfD7e7cdCedB831dEb42d92bED2A16) |
+| ETH V2 Randomness Adapter | [`0xf66eB3Cae9d8be7489Be80CEB693A1086f29Ee68`](https://robinhoodchain.blockscout.com/address/0xf66eB3Cae9d8be7489Be80CEB693A1086f29Ee68) |
 | Shared OpenVRF Router | [`0x4820F1DABC267fD4dD8Cd00E1dB30B2Cbef1de0f`](https://robinhoodchain.blockscout.com/address/0x4820F1DABC267fD4dD8Cd00E1dB30B2Cbef1de0f) |
 
 Users should verify contract addresses against this table before interacting with the protocol.
@@ -92,11 +92,11 @@ The full procedure is documented in [docs/VERIFICATION.md](docs/VERIFICATION.md)
 
 ## Administrative scope
 
-The protocol owner may create USDG and ETH pools and templates, enable or disable templates, pause new entry, withdraw only accounted protocol fees, and configure the provider used for future randomness requests. These permissions do not include setting a winning ticket, supplying a winner address, changing sold ticket ownership, accessing participant liabilities through a fee vault or replacing a completed result.
+The protocol owner may create USDG and ETH pools and templates, enable or disable templates, pause new entry, and withdraw only accounted protocol fees. These permissions do not include replacing the V2 randomness provider or Router, setting a winning ticket, supplying a winner address, changing sold ticket ownership, accessing participant liabilities through a fee vault, or replacing a completed result.
 
 See [docs/TRUST-MODEL.md](docs/TRUST-MODEL.md) for the complete authority and availability model.
 
-For the pending V2 candidate, PoolManager's randomness provider and the adapter's Router cannot be replaced after deployment. The adapter is bound to its PoolManager once. Other owner permissions remain until a later multisig/timelock migration.
+In V2, PoolManager's randomness provider and the adapter's Router cannot be replaced after deployment. The adapter is bound to its PoolManager once. Other owner permissions remain until a later multisig/timelock migration.
 
 ## Repository structure
 

@@ -42,3 +42,4 @@ The protocol fee is transferred to the matching asset vault only after winner se
 - Callback retry uses the same stored random word and consumer; it does not redraw.
 - PoolManager rejects an already fulfilled request or a pool that already has a winner.
 - An expired pool below capacity has no winner and participants claim refunds.
+- In V2, a fully sold pool that remains in `DRAWING` for one hour without successful delivery also becomes refundable. Each wallet can recover only its recorded contribution.
